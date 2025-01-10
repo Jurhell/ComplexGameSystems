@@ -6,11 +6,15 @@
 #include "Components/ActorComponent.h"
 #include "MomentumComponent.generated.h"
 
+class APhysicsSystemCharacter;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PHYSICSSYSTEM_API UMomentumComponent : public UActorComponent
 {
 	GENERATED_BODY()
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	APhysicsSystemCharacter* Player;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float CurrentSpeed;

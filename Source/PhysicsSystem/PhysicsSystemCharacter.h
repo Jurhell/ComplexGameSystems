@@ -84,10 +84,10 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
+	FHitResult GroundCheck();
 private:
 	void PhysicsMovement();
 
-	void GroundCheck();
 	void LedgeCheck();
 	void LedgeVault();
 

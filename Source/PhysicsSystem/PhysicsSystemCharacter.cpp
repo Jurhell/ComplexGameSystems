@@ -113,7 +113,6 @@ void APhysicsSystemCharacter::Move(const FInputActionValue& Value)
 		// add movement 
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
-		GroundCheck();
 	}
 }
 
@@ -134,7 +133,7 @@ void APhysicsSystemCharacter::Slide(const FInputActionValue& Value)
 {
 }
 
-void APhysicsSystemCharacter::GroundCheck()
+FHitResult APhysicsSystemCharacter::GroundCheck()
 {
 	// FHitResult will hold all data returned by line collision query
 	FHitResult Hit;
@@ -158,4 +157,6 @@ void APhysicsSystemCharacter::GroundCheck()
 	//}
 	//else
 	//	UE_LOG(LogTemp, Log, TEXT("No actors were hit"));
+
+	return Hit;
 }

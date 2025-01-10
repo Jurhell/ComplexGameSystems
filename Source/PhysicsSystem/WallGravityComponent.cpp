@@ -2,6 +2,7 @@
 
 
 #include "WallGravityComponent.h"
+#include "PhysicsSystemCharacter.h"
 
 // Sets default values for this component's properties
 UWallGravityComponent::UWallGravityComponent()
@@ -37,6 +38,16 @@ void UWallGravityComponent::RotatePlayer()
 
 FVector UWallGravityComponent::GetGroundNormal()
 {
+	FHitResult Hit = Player->GroundCheck();
+	
+	if (!Hit.bBlockingHit)
+	{
+		UE_LOG(LogTemp, Log, TEXT(" Player isn't grounded"));
+		return FVector();
+	}
+
+	Hit.ImpactNormal;
+	Hit.GetActor()->GetActorRotation();
 	return FVector();
 }
 

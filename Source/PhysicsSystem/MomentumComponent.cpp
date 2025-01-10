@@ -2,6 +2,7 @@
 
 
 #include "MomentumComponent.h"
+#include "PhysicsSystemCharacter.h"
 
 // Sets default values for this component's properties
 UMomentumComponent::UMomentumComponent()
@@ -30,5 +31,22 @@ void UMomentumComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
+}
+
+void UMomentumComponent::SlopeMomentum()
+{
+	FHitResult Hit = Player->GroundCheck();
+
+	float HitYaw = Hit.GetActor()->GetActorRotation().Yaw;
+	float HitPitch = Hit.GetActor()->GetActorRotation().Pitch;
+	float HitRoll = Hit.GetActor()->GetActorRotation().Roll;
+	
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::SanitizeFloat(HitYaw));
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::SanitizeFloat(HitPitch));
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::SanitizeFloat(HitRoll));
+}
+
+void UMomentumComponent::IncreaseTopSpeed()
+{
 }
 
