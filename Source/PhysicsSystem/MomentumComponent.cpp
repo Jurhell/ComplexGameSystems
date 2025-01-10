@@ -41,9 +41,10 @@ void UMomentumComponent::SlopeMomentum()
 	float HitPitch = Hit.GetActor()->GetActorRotation().Pitch;
 	float HitRoll = Hit.GetActor()->GetActorRotation().Roll;
 	
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::SanitizeFloat(HitYaw));
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::SanitizeFloat(HitPitch));
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::SanitizeFloat(HitRoll));
+	//Ask about pointers in unreal
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("Yaw"), HitYaw));
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("Pitch"), HitPitch));
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("Roll"), HitRoll));
 }
 
 void UMomentumComponent::IncreaseTopSpeed()
