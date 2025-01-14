@@ -19,8 +19,17 @@ class PHYSICSSYSTEM_API UMomentumComponent : public UActorComponent
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float CurrentSpeed;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	float TopSpeed;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float SpeedReset;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	float AccelerationRate;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	float SlopeAcceleration;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	FVector StoredVelocity;
@@ -44,5 +53,5 @@ private:
 	void SlopeMomentum();
 
 	void IncreaseTopSpeed();
-	void ResetSpeed();
+	void ResetSpeed() { TopSpeed = SpeedReset; }
 };

@@ -3,6 +3,7 @@
 
 #include "MomentumComponent.h"
 #include "PhysicsSystemCharacter.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values for this component's properties
 UMomentumComponent::UMomentumComponent()
@@ -35,19 +36,29 @@ void UMomentumComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 
 void UMomentumComponent::SlopeMomentum()
 {
-	FHitResult Hit = Player->GroundCheck();
 
-	float HitYaw = Hit.GetActor()->GetActorRotation().Yaw;
-	float HitPitch = Hit.GetActor()->GetActorRotation().Pitch;
-	float HitRoll = Hit.GetActor()->GetActorRotation().Roll;
-	
-	//Ask about pointers in unreal
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("Yaw"), HitYaw));
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("Pitch"), HitPitch));
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::White, FString::Printf(TEXT("Roll"), HitRoll));
+	float SlopeAngle = Player->GroundCheckSlopes();
+
+	if (SlopeAngle == 0)
+	{
+		ResetSpeed();
+		return;
+	}
+
+	double DeltaTime = GetWorld()->DeltaTimeSeconds;
+
+	CurrentSpeed = FMath::FInterpTo(CurrentSpeed, SlopeAngle, DeltaTime, SlopeAcceleration);
+
+	IncreaseTopSpeed();
+
+	if (CurrentSpeed >= TopSpeed)
+		CurrentSpeed = TopSpeed;
+
+	//FString S = FString::SanitizeFloat();
+
+	/*GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::White, *S);*/
 }
 
 void UMomentumComponent::IncreaseTopSpeed()
 {
 }
-

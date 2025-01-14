@@ -54,6 +54,9 @@ class APhysicsSystemCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Booleans, meta = (AllowPrivateAccess = "true"))
 	bool bIsSliding = false;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Curve, meta = (AllowPrivateAccess = "true"))
+	UCurveFloat* MovementCurve;
+
 	UPROPERTY(EditAnywhere, Category = "Collision")
 	TEnumAsByte<ECollisionChannel> TraceChannelProperty = ECC_Pawn;
 
@@ -68,8 +71,6 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
-			
-	void Slide(const FInputActionValue& Value);
 
 protected:
 	// APawn interface
@@ -85,12 +86,13 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	FHitResult GroundCheck();
+	float GroundCheckSlopes();
 private:
 	void PhysicsMovement();
 
 	void LedgeCheck();
 	void LedgeVault();
 
-	void EndSlide();
+	float MapValue(float InputMin, float InputMax, float OutputMin, float OutputMax, float Value) { return OutputMin + ((OutputMax - OutputMin) / (InputMax - InputMin)) * (Value - InputMin); }
 };
 
