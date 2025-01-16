@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "MomentumComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -115,10 +116,14 @@ void APhysicsSystemCharacter::Move(const FInputActionValue& Value)
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
 
-		//Testing
-		float Angle = GroundCheckSlopes();
+		//Testing--------------------------------------------------------------------------------------------------
+		UMomentumComponent* MomentumComp = GetComponentByClass<UMomentumComponent>();
+		if (MomentumComp == nullptr)
+			return;
 
-		FString S = FString::SanitizeFloat(Angle);
+		GetCharacterMovement()->MaxWalkSpeed = MomentumComp->GetCurrentSpeed();
+
+		//FString S = FString::SanitizeFloat(OutAngle);
 
 		//GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::White, *S);
 	}
@@ -144,7 +149,7 @@ FHitResult APhysicsSystemCharacter::GroundCheck()
 	
 	//Setting a trace from the player mesh's current location to 5cm beneath them
 	FVector TraceStart = GetMesh()->GetComponentLocation();
-	FVector TraceEnd = (GetActorUpVector() * -5.0f) + GetMesh()->GetComponentLocation();
+	FVector TraceEnd = (GetActorUpVector() * -10.0f) + GetMesh()->GetComponentLocation();
 
 	//Setting trace to ignore player
 	FCollisionQueryParams QueryParams;
@@ -163,55 +168,4 @@ FHitResult APhysicsSystemCharacter::GroundCheck()
 	//	UE_LOG(LogTemp, Log, TEXT("No actors were hit"));
 
 	return Hit;
-}
-
-float APhysicsSystemCharacter::GroundCheckSlopes()
-{
-	// FHitResult will hold all data returned by line collision query
-	FHitResult Hit;
-
-	//Setting a trace from the player mesh's current location to the offset value
-	FVector Offset = { 0.0f, 0.0f, -5.0f };
-	FVector TraceStart = GetMesh()->GetComponentLocation();
-	FVector TraceEnd = GetMesh()->GetComponentLocation() + Offset;
-
-	//Setting trace to ignore player
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(this);
-
-	//Tracing
-	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, TraceChannelProperty, QueryParams);
-
-	FVector TempHit = Hit.Location;
-
-	//Storing values to use in second trace
-	FVector PlayerVelocity = GetCharacterMovement()->Velocity.GetSafeNormal();
-	double VelocityLength = GetCharacterMovement()->Velocity.Length();
-	float PlayerMaxWalkSpeed = GetCharacterMovement()->GetMaxSpeed();
-
-	//Mapped value with Unreal's mapping
-	double MappedValue = FMath::GetMappedRangeValueUnclamped({ 0.0f, PlayerMaxWalkSpeed }, FVector2D::Zero(), VelocityLength);
-
-	FVector SecondTraceStart = GetMesh()->GetComponentLocation() + (PlayerVelocity * MapValue(0.0f, PlayerMaxWalkSpeed, 0.0f, 0.0f, VelocityLength));
-	FVector SecondTraceEnd = SecondTraceStart + Offset;
-
-	//Setting trace to ignore player... again
-	FCollisionQueryParams SecondQueryParams;
-	SecondQueryParams.AddIgnoredActor(this);
-
-	//Tracing a second time
-	GetWorld()->LineTraceSingleByChannel(Hit, SecondTraceStart, SecondTraceEnd, TraceChannelProperty, SecondQueryParams);
-
-	FVector SecondTemp = Hit.Location;
-
-	FRotator HitsLookAtRotation = UKismetMathLibrary::FindLookAtRotation(TempHit, SecondTemp);
-
-	float Angle = MovementCurve->GetFloatValue(HitsLookAtRotation.Pitch);
-
-	//Debugging tools
-	FString S = FString::SanitizeFloat(Angle);
-	GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::White, *S);
-	DrawDebugLine(GetWorld(), SecondTraceStart, SecondTraceEnd, Hit.bBlockingHit ? FColor::Green : FColor::Red, false, 5.0f, 0, 10.0f);
-
-	return Angle;
 }

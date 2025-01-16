@@ -21,9 +21,12 @@ class PHYSICSSYSTEM_API UMomentumComponent : public UActorComponent
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float TopSpeed;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	float MaxSpeed;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	float SpeedReset;
+	float TopSpeedReset;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float AccelerationRate;
@@ -48,10 +51,16 @@ protected:
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	
+	void SlopeMomentum();
+	float GetCurrentSpeed() const { return CurrentSpeed; }
 
 private:
-	void SlopeMomentum();
+	void MomentumBehavior();
 
-	void IncreaseTopSpeed();
-	void ResetSpeed() { TopSpeed = SpeedReset; }
+	float GetSlopeAngle();
+
+	void IncreaseTopSpeed(float IncreaseAmount);
+	void SpeedCheck();
+	void ResetSpeed() { TopSpeed = TopSpeedReset; }
 };

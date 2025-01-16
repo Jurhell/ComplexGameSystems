@@ -44,19 +44,6 @@ class APhysicsSystemCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
-	/** Slide Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* SlideAction;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Booleans, meta = (AllowPrivateAccess = "true"))
-	bool bCanVault = false;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Booleans, meta = (AllowPrivateAccess = "true"))
-	bool bIsSliding = false;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Curve, meta = (AllowPrivateAccess = "true"))
-	UCurveFloat* MovementCurve;
-
 	UPROPERTY(EditAnywhere, Category = "Collision")
 	TEnumAsByte<ECollisionChannel> TraceChannelProperty = ECC_Pawn;
 
@@ -85,14 +72,8 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
+	UInputAction* GetMoveAction() { return MoveAction; }
+
 	FHitResult GroundCheck();
-	float GroundCheckSlopes();
-private:
-	void PhysicsMovement();
-
-	void LedgeCheck();
-	void LedgeVault();
-
-	float MapValue(float InputMin, float InputMax, float OutputMin, float OutputMax, float Value) { return OutputMin + ((OutputMax - OutputMin) / (InputMax - InputMin)) * (Value - InputMin); }
 };
 
