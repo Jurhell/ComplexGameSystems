@@ -5,9 +5,7 @@
 #include "PhysicsSystemCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Kismet/GameplayStatics.h"
-#include "Gameframework/PlayerController.h"
-#include "EnhancedInputComponent.h"
+
 
 // Sets default values for this component's properties
 UMomentumComponent::UMomentumComponent()
@@ -19,19 +17,15 @@ UMomentumComponent::UMomentumComponent()
 	// ...
 }
 
-
 // Called when the game starts
 void UMomentumComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	TObjectPtr<UInputComponent> PlayerInput = PlayerController->InputComponent;
-	UEnhancedInputComponent* EnhancedPlayerInput = Cast<UEnhancedInputComponent>(PlayerInput);
+	Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 
 	TopSpeedReset = TopSpeed;
 }
-
 
 // Called every frame
 void UMomentumComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -44,6 +38,10 @@ void UMomentumComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 void UMomentumComponent::SlopeMomentum()
 {
 	float SlopeAngle = GetSlopeAngle();
+	FHitResult Hit = GroundCheck();
+
+	if (!Hit.bBlockingHit)
+		return;
 
 	//If slope is steeper than 20 degrees cut the player's speed in half
 	if (SlopeAngle > 20.0f)
@@ -52,23 +50,54 @@ void UMomentumComponent::SlopeMomentum()
 		return;
 	}
 	
-	//CurrentSpeed = FMath::FInterpTo(CurrentSpeed, SlopeAngle, DeltaTime, SlopeAcceleration);
+	FVector PlayerForward = Player->GetActorForwardVector();
 
+	float DotProduct = FVector::DotProduct(Hit.ImpactNormal, PlayerForward);
+
+	//CurrentSpeed = FMath::FInterpTo(CurrentSpeed, SlopeAngle, DeltaTime, SlopeAcceleration);
+	
 	IncreaseTopSpeed(SlopeAngle);
 
 	//Keeping the player's speed in check
 	SpeedCheck();
 }
 
+FHitResult UMomentumComponent::GroundCheck()
+{
+	// FHitResult will hold all data returned by line collision query
+	FHitResult Hit;
+
+	//Setting a trace from the player mesh's current location to 5cm beneath them
+	FVector TraceStart = Player->GetMesh()->GetComponentLocation();
+	FVector TraceEnd = (Player->GetActorUpVector() * -10.0f) + Player->GetMesh()->GetComponentLocation();
+
+	//Setting trace to ignore player
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(Player);
+
+	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, TraceChannelProperty, QueryParams);
+
+	//Debugging tools
+	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, Hit.bBlockingHit ? FColor::Green : FColor::Red, false, 5.0f, 0, 10.0f);
+
+	return Hit;
+}
+
 void UMomentumComponent::MomentumBehavior()
 {
-	UEnhancedInputComponent* EPlayerInput = Player->GetComponentByClass<UEnhancedInputComponent>();
-	
-	//if (EPlayerInput->GetActionBinding(1).GetActionName())
+	if (!bIsPlayerMoving())
+		return;
 
-	GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::White, EPlayerInput->GetActionBinding(1).GetActionName().GetPlainNameString());
+	CurrentSpeed += AccelerationRate;
+
+	GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::White, "Moving");
 
 	SpeedCheck();
+}
+
+void UMomentumComponent::UseMomentum(float PlayerMaxSpeed)
+{
+	PlayerMaxSpeed = CurrentSpeed;
 }
 
 /// <summary>
@@ -77,7 +106,7 @@ void UMomentumComponent::MomentumBehavior()
 /// <returns>The angle of the slope</returns>
 float UMomentumComponent::GetSlopeAngle()
 {
-	FHitResult Hit = Player->GroundCheck();
+	FHitResult Hit = GroundCheck();
 
 	if (!Hit.bBlockingHit)
 		return 0.f;
@@ -96,7 +125,7 @@ float UMomentumComponent::GetSlopeAngle()
 
 void UMomentumComponent::SlopeRotation()
 {
-	FHitResult Hit = Player->GroundCheck();
+	FHitResult Hit = GroundCheck();
 
 	if (!Hit.bBlockingHit)
 		return;
@@ -104,17 +133,17 @@ void UMomentumComponent::SlopeRotation()
 	FVector FloorNormal = Hit.ImpactNormal;
 	FVector PlayerUpVector = Player->GetActorUpVector();
 
-	FVector RotationAxis = FVector::CrossProduct(PlayerUpVector, FloorNormal);
-	RotationAxis.Normalize();
+	//FVector RotationAxis = FVector::CrossProduct(PlayerUpVector, FloorNormal);
+	//RotationAxis.Normalize();
 
-	float DotProduct = FVector::DotProduct(PlayerUpVector, FloorNormal);
-	float RotationAngle = acosf(DotProduct);
+	//float DotProduct = FVector::DotProduct(PlayerUpVector, FloorNormal);
+	//float RotationAngle = acosf(DotProduct);
 
-	FQuat Quaternion = FQuat(RotationAxis, RotationAngle);
-	FQuat RootQuaternion = Player->GetActorQuat(); //If something goes wrong
+	//FQuat Quaternion = FQuat(RotationAxis, RotationAngle);
+	//FQuat RootQuaternion = Player->GetActorQuat(); //If something goes wrong
 
-	FQuat NewQuat = Quaternion * RootQuaternion;
-	Player->SetActorRotation(NewQuat.Rotator());
+	//FQuat NewQuat = Quaternion * RootQuaternion;
+	//Player->SetActorRotation(NewQuat.Rotator());
 }
 
 /// <summary>
@@ -147,4 +176,18 @@ void UMomentumComponent::SpeedCheck()
 	//Making sure the player's top speed doesn't exceed the max speed
 	if (TopSpeed >= MaxSpeed)
 		TopSpeed = MaxSpeed;
+}
+
+bool UMomentumComponent::bIsPlayerMoving()
+{
+	if (!Player)
+		return false;
+
+	bool bIsFalling = Player->GetCharacterMovement()->IsFalling();
+	FVector Velocity = Player->GetCharacterMovement()->Velocity;
+
+	if (!bIsFalling && Velocity.Length() > 0.f)
+		return true;
+
+	return false;
 }

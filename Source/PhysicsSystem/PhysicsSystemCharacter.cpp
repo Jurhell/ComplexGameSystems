@@ -117,11 +117,11 @@ void APhysicsSystemCharacter::Move(const FInputActionValue& Value)
 		AddMovementInput(RightDirection, MovementVector.X);
 
 		//Testing--------------------------------------------------------------------------------------------------
-		UMomentumComponent* MomentumComp = GetComponentByClass<UMomentumComponent>();
-		if (MomentumComp == nullptr)
-			return;
+		//UMomentumComponent* MomentumComp = GetComponentByClass<UMomentumComponent>();
+		//if (MomentumComp == nullptr)
+		//	return;
 
-		GetCharacterMovement()->MaxWalkSpeed = MomentumComp->GetCurrentSpeed();
+		//GetCharacterMovement()->MaxWalkSpeed = MomentumComp->GetCurrentSpeed();
 
 		//FString S = FString::SanitizeFloat(OutAngle);
 
@@ -140,32 +140,4 @@ void APhysicsSystemCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
-}
-
-FHitResult APhysicsSystemCharacter::GroundCheck()
-{
-	// FHitResult will hold all data returned by line collision query
-	FHitResult Hit;
-	
-	//Setting a trace from the player mesh's current location to 5cm beneath them
-	FVector TraceStart = GetMesh()->GetComponentLocation();
-	FVector TraceEnd = (GetActorUpVector() * -10.0f) + GetMesh()->GetComponentLocation();
-
-	//Setting trace to ignore player
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(this);
-
-	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, TraceChannelProperty, QueryParams);
-
-	//Debugging tools
-	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, Hit.bBlockingHit ? FColor::Green : FColor::Red, false, 5.0f, 0, 10.0f);
-	//UE_LOG(LogTemp, Log, TEXT("Tracing line: %s to %s"), *TraceStart.ToCompactString(), *TraceEnd.ToCompactString());
-
-	//if (Hit.bBlockingHit && IsValid(Hit.GetActor())) {
-	//	UE_LOG(LogTemp, Log, TEXT("Trace hit actor : %s"), *Hit.GetActor()->GetName());
-	//}
-	//else
-	//	UE_LOG(LogTemp, Log, TEXT("No actors were hit"));
-
-	return Hit;
 }
