@@ -94,6 +94,28 @@ float UMomentumComponent::GetSlopeAngle()
 	return OutAngle;
 }
 
+void UMomentumComponent::SlopeRotation()
+{
+	FHitResult Hit = Player->GroundCheck();
+
+	if (!Hit.bBlockingHit)
+		return;
+
+	FVector FloorNormal = Hit.ImpactNormal;
+	FVector PlayerUpVector = Player->GetActorUpVector();
+
+	FVector RotationAxis = FVector::CrossProduct(PlayerUpVector, FloorNormal);
+	RotationAxis.Normalize();
+
+	float DotProduct = FVector::DotProduct(PlayerUpVector, FloorNormal);
+	float RotationAngle = acosf(DotProduct);
+
+	FQuat Quaternion = FQuat(RotationAxis, RotationAngle);
+	FQuat RootQuaternion = Player->GetActorQuat(); //If something goes wrong
+
+	FQuat NewQuat = Quaternion * RootQuaternion;
+	Player->SetActorRotation(NewQuat.Rotator());
+}
 
 /// <summary>
 /// Increases the player's top movement speed by the entered amount.

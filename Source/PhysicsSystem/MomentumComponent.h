@@ -59,6 +59,7 @@ private:
 	void MomentumBehavior();
 
 	float GetSlopeAngle();
+	void SlopeRotation();
 
 	void IncreaseTopSpeed(float IncreaseAmount);
 	void SpeedCheck();
