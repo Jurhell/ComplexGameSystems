@@ -27,11 +27,27 @@ void UMomentumComponent::BeginPlay()
 	TopSpeedReset = TopSpeed;
 }
 
-// Called every frame
-void UMomentumComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+/// <summary>
+/// Handles all the behavior for the component
+/// </summary>
+void UMomentumComponent::MomentumBehavior()
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	// ...
+	//Checks if we are moving
+	if (!bIsPlayerMoving())
+	{
+		//Decrease the current speed if not
+		CurrentSpeed -= AccelerationRate * 3;
+		return;
+	}
+
+	//Increasing speed while moving
+	CurrentSpeed += AccelerationRate;
+
+	//Constantly performing slope behavior
+	SlopeMomentum();
+
+	//Keeping speed in check
+	SpeedCheck();
 }
 
 //Handles the behavior for the player's movement speed when going up or down slopes
@@ -42,21 +58,22 @@ void UMomentumComponent::SlopeMomentum()
 
 	if (!Hit.bBlockingHit)
 		return;
-
-	//If slope is steeper than 20 degrees cut the player's speed in half
-	if (SlopeAngle > 20.0f)
-	{
-		CurrentSpeed = CurrentSpeed *= 0.5f;
-		return;
-	}
 	
 	FVector PlayerForward = Player->GetActorForwardVector();
 
 	float DotProduct = FVector::DotProduct(Hit.ImpactNormal, PlayerForward);
 
-	//CurrentSpeed = FMath::FInterpTo(CurrentSpeed, SlopeAngle, DeltaTime, SlopeAcceleration);
+	float Target = MovementCurve->GetFloatValue(DotProduct);
+	float DeltaSeconds = Player->GetWorld()->DeltaTimeSeconds;
 	
-	IncreaseTopSpeed(SlopeAngle);
+	CurrentSpeed = FMath::FInterpTo(CurrentSpeed, Target, DeltaSeconds, TopSpeed);
+
+	//If player reaches top speed while descending a slope increase top speed
+	if (TopSpeed == TopSpeed)
+		IncreaseTopSpeed(SlopeAngle);
+	//Otherwise reset top speed
+	else
+		ResetSpeed();
 
 	//Keeping the player's speed in check
 	SpeedCheck();
@@ -77,24 +94,13 @@ FHitResult UMomentumComponent::GroundCheck()
 
 	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, TraceChannelProperty, QueryParams);
 
-	//Debugging tools
-	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, Hit.bBlockingHit ? FColor::Green : FColor::Red, false, 5.0f, 0, 10.0f);
-
 	return Hit;
 }
 
-void UMomentumComponent::MomentumBehavior()
-{
-	if (!bIsPlayerMoving())
-		return;
-
-	CurrentSpeed += AccelerationRate;
-
-	GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::White, "Moving");
-
-	SpeedCheck();
-}
-
+/// <summary>
+/// Subsitutes the default max speed with the one from this component
+/// </summary>
+/// <param name="PlayerMaxSpeed">The Character Movement component's max walk speed</param>
 void UMomentumComponent::UseMomentum(float PlayerMaxSpeed)
 {
 	PlayerMaxSpeed = CurrentSpeed;
@@ -121,29 +127,6 @@ float UMomentumComponent::GetSlopeAngle()
 	UKismetMathLibrary::GetSlopeDegreeAngles(PlayerForward, FloorNormal, PlayerUpVector, OutPitch, OutAngle);
 
 	return OutAngle;
-}
-
-void UMomentumComponent::SlopeRotation()
-{
-	FHitResult Hit = GroundCheck();
-
-	if (!Hit.bBlockingHit)
-		return;
-
-	FVector FloorNormal = Hit.ImpactNormal;
-	FVector PlayerUpVector = Player->GetActorUpVector();
-
-	//FVector RotationAxis = FVector::CrossProduct(PlayerUpVector, FloorNormal);
-	//RotationAxis.Normalize();
-
-	//float DotProduct = FVector::DotProduct(PlayerUpVector, FloorNormal);
-	//float RotationAngle = acosf(DotProduct);
-
-	//FQuat Quaternion = FQuat(RotationAxis, RotationAngle);
-	//FQuat RootQuaternion = Player->GetActorQuat(); //If something goes wrong
-
-	//FQuat NewQuat = Quaternion * RootQuaternion;
-	//Player->SetActorRotation(NewQuat.Rotator());
 }
 
 /// <summary>
@@ -178,6 +161,10 @@ void UMomentumComponent::SpeedCheck()
 		TopSpeed = MaxSpeed;
 }
 
+/// <summary>
+/// Checks if the player is moving
+/// </summary>
+/// <returns>Whether the player is moving or not</returns>
 bool UMomentumComponent::bIsPlayerMoving()
 {
 	if (!Player)

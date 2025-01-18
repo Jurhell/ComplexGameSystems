@@ -21,28 +21,22 @@ class PHYSICSSYSTEM_API UMomentumComponent : public UActorComponent
 	float CurrentSpeed;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	float TopSpeed;
+	float TopSpeed = 20.f;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	float MaxSpeed;
+	float MaxSpeed = 100.f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float TopSpeedReset;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	float AccelerationRate;
+	float AccelerationRate = 1.28f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	float SlopeAcceleration;
+	float SlopeAcceleration = 2.56f;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	FVector StoredVelocity;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	bool bStoreMomentum;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	bool bIsMoving;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UCurveFloat* MovementCurve;
 
 	UPROPERTY(EditAnywhere, Category = "Collision")
 	TEnumAsByte<ECollisionChannel> TraceChannelProperty = ECC_Pawn;
@@ -55,9 +49,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	
 	void SlopeMomentum();
 	FHitResult GroundCheck();
 
@@ -69,7 +60,6 @@ private:
 	void UseMomentum(float PlayerMaxSpeed);
 
 	float GetSlopeAngle();
-	void SlopeRotation();
 
 	bool bIsPlayerMoving();
 
