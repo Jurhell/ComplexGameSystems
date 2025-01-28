@@ -43,40 +43,53 @@ void UMomentumComponent::MomentumBehavior()
 	//Increasing speed while moving
 	CurrentSpeed += AccelerationRate;
 
+	float SlopeAngle = GetSlopeAngle();
+
 	//Constantly performing slope behavior
-	SlopeMomentum();
+	SlopeMomentum(SlopeAngle);
 
 	//Keeping speed in check
 	SpeedCheck();
+
+	FString S = FString::SanitizeFloat(SlopeAngle);
+	GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::White, *S);
 }
 
 //Handles the behavior for the player's movement speed when going up or down slopes
-void UMomentumComponent::SlopeMomentum()
+void UMomentumComponent::SlopeMomentum(float SlopeAngle)
 {
-	float SlopeAngle = GetSlopeAngle();
 	FHitResult Hit = GroundCheck();
 
 	if (!Hit.bBlockingHit)
 		return;
+	if (SlopeAngle < 10.f && SlopeAngle > -10.f)
+		return;
 	
-	FVector PlayerForward = Player->GetActorForwardVector();
+	//If going up a slope steeper than 10 degrees
+	if (SlopeAngle >= 10.f)
+	{
+		
+	}
 
+	FVector PlayerForward = Player->GetMesh()->GetForwardVector();
+	
 	float DotProduct = FVector::DotProduct(Hit.ImpactNormal, PlayerForward);
-
-	float Target = MovementCurve->GetFloatValue(DotProduct);
-	float DeltaSeconds = Player->GetWorld()->DeltaTimeSeconds;
 	
-	CurrentSpeed = FMath::FInterpTo(CurrentSpeed, Target, DeltaSeconds, TopSpeed);
+	float Target = MovementCurve->GetFloatValue(DotProduct);
+	float DeltaSeconds = GetWorld()->DeltaTimeSeconds;
+	
+	float InterpResult = FMath::FInterpTo(CurrentSpeed, Target, DeltaSeconds, SlopeAcceleration);
+	CurrentSpeed = InterpResult;
+
+	//FString S = FString::SanitizeFloat(SlopeAngle);
+	//GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::White, *S);
 
 	//If player reaches top speed while descending a slope increase top speed
-	if (TopSpeed == TopSpeed)
+	if (CurrentSpeed == TopSpeed)
 		IncreaseTopSpeed(SlopeAngle);
 	//Otherwise reset top speed
 	else
 		ResetSpeed();
-
-	//Keeping the player's speed in check
-	SpeedCheck();
 }
 
 FHitResult UMomentumComponent::GroundCheck()
@@ -86,7 +99,7 @@ FHitResult UMomentumComponent::GroundCheck()
 
 	//Setting a trace from the player mesh's current location to 5cm beneath them
 	FVector TraceStart = Player->GetMesh()->GetComponentLocation();
-	FVector TraceEnd = (Player->GetActorUpVector() * -10.0f) + Player->GetMesh()->GetComponentLocation();
+	FVector TraceEnd = (Player->GetActorUpVector() * -20.0f) + Player->GetMesh()->GetComponentLocation();
 
 	//Setting trace to ignore player
 	FCollisionQueryParams QueryParams;
@@ -101,9 +114,9 @@ FHitResult UMomentumComponent::GroundCheck()
 /// Subsitutes the default max speed with the one from this component
 /// </summary>
 /// <param name="PlayerMaxSpeed">The Character Movement component's max walk speed</param>
-void UMomentumComponent::UseMomentum(float PlayerMaxSpeed)
+void UMomentumComponent::UseMomentum()
 {
-	PlayerMaxSpeed = CurrentSpeed;
+	Player->GetCharacterMovement()->MaxWalkSpeed = CurrentSpeed;
 }
 
 /// <summary>
@@ -140,9 +153,6 @@ void UMomentumComponent::IncreaseTopSpeed(float IncreaseAmount)
 		IncreaseAmount *= -1.0f;
 
 	TopSpeed += IncreaseAmount;
-
-	//Keeping the player's speed in check
-	SpeedCheck();
 }
 
 //Checks if the player's current and top speeds are exceeding the limits set for them and clamps them within those limits

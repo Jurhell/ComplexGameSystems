@@ -21,19 +21,19 @@ class PHYSICSSYSTEM_API UMomentumComponent : public UActorComponent
 	float CurrentSpeed;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	float TopSpeed = 20.f;
+	float TopSpeed = 200.f;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	float MaxSpeed = 100.f;
+	float MaxSpeed = 1000.f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float TopSpeedReset;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	float AccelerationRate = 1.28f;
+	float AccelerationRate = 12.8f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	float SlopeAcceleration = 2.56f;
+	float SlopeAcceleration = 25.6f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UCurveFloat* MovementCurve;
@@ -49,7 +49,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	void SlopeMomentum();
+	void SlopeMomentum(float SlopeAngle);
 	FHitResult GroundCheck();
 
 private:
@@ -57,7 +57,7 @@ private:
 	void MomentumBehavior();
 
 	UFUNCTION(BlueprintCallable, Category = Essential)
-	void UseMomentum(float PlayerMaxSpeed);
+	void UseMomentum();
 
 	float GetSlopeAngle();
 
