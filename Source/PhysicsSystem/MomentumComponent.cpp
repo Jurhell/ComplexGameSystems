@@ -51,8 +51,8 @@ void UMomentumComponent::MomentumBehavior()
 	//Keeping speed in check
 	SpeedCheck();
 
-	FString S = FString::SanitizeFloat(SlopeAngle);
-	GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::White, *S);
+	//FString S = FString::SanitizeFloat(SlopeAngle);
+	//GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::White, *S);
 }
 
 //Handles the behavior for the player's movement speed when going up or down slopes
@@ -81,8 +81,8 @@ void UMomentumComponent::SlopeMomentum(float SlopeAngle)
 	float InterpResult = FMath::FInterpTo(CurrentSpeed, Target, DeltaSeconds, SlopeAcceleration);
 	CurrentSpeed = InterpResult;
 
-	//FString S = FString::SanitizeFloat(SlopeAngle);
-	//GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::White, *S);
+	FString S = FString::SanitizeFloat(CurrentSpeed);
+	GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::White, *S);
 
 	//If player reaches top speed while descending a slope increase top speed
 	if (CurrentSpeed == TopSpeed)
