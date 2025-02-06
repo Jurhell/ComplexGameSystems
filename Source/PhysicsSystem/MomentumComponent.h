@@ -63,6 +63,7 @@ private:
 
 	bool bIsPlayerMoving();
 
+	void SlopeBehavior(float SlopeAngle);
 	void IncreaseTopSpeed();
 	void SpeedCheck();
 	void ResetSpeed() { TopSpeed = TopSpeedReset; }

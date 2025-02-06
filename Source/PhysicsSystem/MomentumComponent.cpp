@@ -51,8 +51,6 @@ void UMomentumComponent::MomentumBehavior()
 	//Keeping speed in check
 	SpeedCheck();
 
-	FString S = FString::SanitizeFloat(TopSpeed);
-	GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::White, *S);
 }
 
 //Handles the behavior for the player's movement speed when going up or down slopes
@@ -62,6 +60,7 @@ void UMomentumComponent::SlopeMomentum(float SlopeAngle)
 
 	if (!Hit.bBlockingHit)
 		return;
+
 	//If player is not on a slope
 	if (SlopeAngle < 10.f && SlopeAngle > -10.f)
 	{
@@ -69,12 +68,8 @@ void UMomentumComponent::SlopeMomentum(float SlopeAngle)
 		ResetSpeed();
 		return;
 	}
-	
-	//If going up a slope steeper than 10 degrees
-	if (SlopeAngle >= 10.f)
-	{
-		
-	}
+
+	SlopeBehavior(SlopeAngle);
 
 	FVector PlayerForward = Player->GetActorForwardVector();
 	
@@ -86,15 +81,29 @@ void UMomentumComponent::SlopeMomentum(float SlopeAngle)
 	float InterpResult = FMath::FInterpTo(CurrentSpeed, Target, DeltaSeconds, SlopeAcceleration);
 	CurrentSpeed = InterpResult;
 
-	//FString S = FString::SanitizeFloat(CurrentSpeed);
-	//GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::White, *S);
+	FString S = FString::SanitizeFloat(InterpResult);
+	GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::White, *S);
 
 	//If player reaches top speed while descending a slope increase top speed
-	if (CurrentSpeed == TopSpeed)
+	if (CurrentSpeed <= TopSpeed)
 		IncreaseTopSpeed();
-	//Otherwise reset top speed
-	else
-		ResetSpeed();
+}
+
+//Some extra behavior for when the player is on a slope
+void UMomentumComponent::SlopeBehavior(float SlopeAngle)
+{
+	if (SlopeAngle > -10.f)
+		return;
+
+	//If the player's speed is at or above the default top speed
+	if (CurrentSpeed <= TopSpeedReset)
+	{
+		//Begin increasing speed instead of using float curve
+		CurrentSpeed += SlopeAcceleration;
+		//FString S = FString::SanitizeFloat(CurrentSpeed);
+		//GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::White, *S);
+		return;
+	}
 }
 
 FHitResult UMomentumComponent::GroundCheck()
