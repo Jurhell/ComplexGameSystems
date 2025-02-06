@@ -51,8 +51,8 @@ void UMomentumComponent::MomentumBehavior()
 	//Keeping speed in check
 	SpeedCheck();
 
-	//FString S = FString::SanitizeFloat(SlopeAngle);
-	//GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::White, *S);
+	FString S = FString::SanitizeFloat(TopSpeed);
+	GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::White, *S);
 }
 
 //Handles the behavior for the player's movement speed when going up or down slopes
@@ -62,8 +62,13 @@ void UMomentumComponent::SlopeMomentum(float SlopeAngle)
 
 	if (!Hit.bBlockingHit)
 		return;
+	//If player is not on a slope
 	if (SlopeAngle < 10.f && SlopeAngle > -10.f)
+	{
+		//Reset their speed
+		ResetSpeed();
 		return;
+	}
 	
 	//If going up a slope steeper than 10 degrees
 	if (SlopeAngle >= 10.f)
@@ -71,22 +76,22 @@ void UMomentumComponent::SlopeMomentum(float SlopeAngle)
 		
 	}
 
-	FVector PlayerForward = Player->GetMesh()->GetForwardVector();
+	FVector PlayerForward = Player->GetActorForwardVector();
 	
 	float DotProduct = FVector::DotProduct(Hit.ImpactNormal, PlayerForward);
 	
 	float Target = MovementCurve->GetFloatValue(DotProduct);
-	float DeltaSeconds = GetWorld()->DeltaTimeSeconds;
+	float DeltaSeconds = GetWorld()->DeltaTimeSeconds / 4;
 	
 	float InterpResult = FMath::FInterpTo(CurrentSpeed, Target, DeltaSeconds, SlopeAcceleration);
 	CurrentSpeed = InterpResult;
 
-	FString S = FString::SanitizeFloat(CurrentSpeed);
-	GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::White, *S);
+	//FString S = FString::SanitizeFloat(CurrentSpeed);
+	//GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::White, *S);
 
 	//If player reaches top speed while descending a slope increase top speed
 	if (CurrentSpeed == TopSpeed)
-		IncreaseTopSpeed(SlopeAngle);
+		IncreaseTopSpeed();
 	//Otherwise reset top speed
 	else
 		ResetSpeed();
@@ -146,13 +151,15 @@ float UMomentumComponent::GetSlopeAngle()
 /// Increases the player's top movement speed by the entered amount.
 /// </summary>
 /// <param name="IncreaseAmount">The amount the top speed will increase</param>
-void UMomentumComponent::IncreaseTopSpeed(float IncreaseAmount)
+void UMomentumComponent::IncreaseTopSpeed()
 {
 	//When using the slope angle as the increase amount make the number positive
-	if (IncreaseAmount < 0.0f)
-		IncreaseAmount *= -1.0f;
+	//if (IncreaseAmount < 0.0f)
+	//	IncreaseAmount *= -1.0f;
 
-	TopSpeed += IncreaseAmount;
+	//TopSpeed += IncreaseAmount;
+
+	TopSpeed = MaxSpeed;
 }
 
 //Checks if the player's current and top speeds are exceeding the limits set for them and clamps them within those limits

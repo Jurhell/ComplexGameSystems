@@ -21,10 +21,10 @@ class PHYSICSSYSTEM_API UMomentumComponent : public UActorComponent
 	float CurrentSpeed;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	float TopSpeed = 200.f;
+	float TopSpeed = 1000.f;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	float MaxSpeed = 1000.f;
+	float MaxSpeed = 5000.f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float TopSpeedReset;
@@ -63,7 +63,7 @@ private:
 
 	bool bIsPlayerMoving();
 
-	void IncreaseTopSpeed(float IncreaseAmount);
+	void IncreaseTopSpeed();
 	void SpeedCheck();
 	void ResetSpeed() { TopSpeed = TopSpeedReset; }
 };
