@@ -199,7 +199,8 @@ bool UMomentumComponent::bIsPlayerMoving()
 	bool bIsFalling = Player->GetCharacterMovement()->IsFalling();
 	FVector Velocity = Player->GetCharacterMovement()->Velocity;
 
-	if (!bIsFalling && Velocity.Length() > 0.f)
+	if (!bIsFalling && Velocity.Length() > 0.f ||
+		bIsFalling && Velocity.Length() > 0.f)
 		return true;
 
 	return false;

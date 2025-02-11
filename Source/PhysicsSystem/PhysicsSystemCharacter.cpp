@@ -62,6 +62,17 @@ void APhysicsSystemCharacter::BeginPlay()
 	Super::BeginPlay();
 }
 
+void APhysicsSystemCharacter::Tick(float deltaTime)
+{
+	UMomentumComponent* MomentumComp = GetComponentByClass<UMomentumComponent>();
+
+	if (MomentumComp == nullptr)
+		return;
+
+	MomentumComp->MomentumBehavior();
+	MomentumComp->UseMomentum();
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Input
 
@@ -117,11 +128,6 @@ void APhysicsSystemCharacter::Move(const FInputActionValue& Value)
 		AddMovementInput(RightDirection, MovementVector.X);
 
 		//Testing--------------------------------------------------------------------------------------------------
-		//UMomentumComponent* MomentumComp = GetComponentByClass<UMomentumComponent>();
-		//if (MomentumComp == nullptr)
-		//	return;
-
-		//GetCharacterMovement()->MaxWalkSpeed = MomentumComp->GetCurrentSpeed();
 
 		//FString S = FString::SanitizeFloat(OutAngle);
 

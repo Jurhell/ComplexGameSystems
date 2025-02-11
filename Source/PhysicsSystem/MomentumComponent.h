@@ -49,20 +49,21 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	void SlopeMomentum(float SlopeAngle);
-	FHitResult GroundCheck();
-
-private:
 	UFUNCTION(BlueprintCallable, Category = Essential)
 	void MomentumBehavior();
 
 	UFUNCTION(BlueprintCallable, Category = Essential)
 	void UseMomentum();
 
+	FHitResult GroundCheck();
+
+private:
+
 	float GetSlopeAngle();
 
 	bool bIsPlayerMoving();
 
+	void SlopeMomentum(float SlopeAngle);
 	void SlopeBehavior(float SlopeAngle);
 	void IncreaseTopSpeed();
 	void SpeedCheck();
