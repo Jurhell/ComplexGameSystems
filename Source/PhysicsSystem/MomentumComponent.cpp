@@ -50,7 +50,6 @@ void UMomentumComponent::MomentumBehavior()
 
 	//Keeping speed in check
 	SpeedCheck();
-
 }
 
 //Handles the behavior for the player's movement speed when going up or down slopes
@@ -81,6 +80,7 @@ void UMomentumComponent::SlopeMomentum(float SlopeAngle)
 	float InterpResult = FMath::FInterpTo(CurrentSpeed, Target, DeltaSeconds, SlopeAcceleration);
 	CurrentSpeed = InterpResult;
 
+	//Testing
 	FString S = FString::SanitizeFloat(InterpResult);
 	GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::White, *S);
 
@@ -100,8 +100,6 @@ void UMomentumComponent::SlopeBehavior(float SlopeAngle)
 	{
 		//Begin increasing speed instead of using float curve
 		CurrentSpeed += SlopeAcceleration;
-		//FString S = FString::SanitizeFloat(CurrentSpeed);
-		//GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::White, *S);
 		return;
 	}
 }
@@ -131,10 +129,15 @@ FHitResult UMomentumComponent::GroundCheck()
 void UMomentumComponent::UseMomentum()
 {
 	Player->GetCharacterMovement()->MaxWalkSpeed = CurrentSpeed;
+
+	//FVector PlayerForward = Player->GetActorForwardVector().GetSafeNormal();
+	//FVector Force = PlayerForward * (CurrentSpeed * 2);
+
+	//Player->GetCharacterMovement()->AddForce(Force);
 }
 
 /// <summary>
-/// Casts a line at the player's feat to find the normal of what the player is standing on and findss the angle of what's beneath the player.
+/// Casts a line at the player's feat to find the normal of what the player is standing on and finds the angle of what's beneath the player.
 /// </summary>
 /// <returns>The angle of the slope</returns>
 float UMomentumComponent::GetSlopeAngle()
@@ -162,12 +165,6 @@ float UMomentumComponent::GetSlopeAngle()
 /// <param name="IncreaseAmount">The amount the top speed will increase</param>
 void UMomentumComponent::IncreaseTopSpeed()
 {
-	//When using the slope angle as the increase amount make the number positive
-	//if (IncreaseAmount < 0.0f)
-	//	IncreaseAmount *= -1.0f;
-
-	//TopSpeed += IncreaseAmount;
-
 	TopSpeed = MaxSpeed;
 }
 
@@ -199,6 +196,7 @@ bool UMomentumComponent::bIsPlayerMoving()
 	bool bIsFalling = Player->GetCharacterMovement()->IsFalling();
 	FVector Velocity = Player->GetCharacterMovement()->Velocity;
 
+	//Check if player is walking or jumping
 	if (!bIsFalling && Velocity.Length() > 0.f ||
 		bIsFalling && Velocity.Length() > 0.f)
 		return true;

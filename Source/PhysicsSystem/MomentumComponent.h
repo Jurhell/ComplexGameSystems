@@ -35,6 +35,9 @@ class PHYSICSSYSTEM_API UMomentumComponent : public UActorComponent
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float SlopeAcceleration = 25.6f;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool bConserveMomentum;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UCurveFloat* MovementCurve;
 
